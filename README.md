@@ -9,7 +9,7 @@
 
 **Интеграция с Java-проектом.**
 
-**Бот создан на Python 3.14 (FastApi)**
+**Бот создан на Python 3.14 (FastAPI)**
 
 
 ## Быстрый старт
@@ -124,9 +124,13 @@ POST /api/chat
 
 GET /api/health
 
+Проверка работоспособности сервера.
+
+Пример ответа:
+
 ```json
 {
-  "status": "ok",
+  "status": "OK",
   "deepseek_api": "connected",
   "timestamp": "2026-04-04T12:00:00"
 }
