@@ -1,8 +1,8 @@
 ![Python](https://img.shields.io/badge/Python-3.14-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.135-green)
-![DeepSeek](https://img.shields.io/badge/DeepSeek-AI-red)
 
-# DeepSeek AI Broker
+
+# YandexGPT Broker
 
 **AI-бот, который помогает покупателям с выбором блюд в ресторане.
 Также помощник для подсчета каллорий в блюде.**
@@ -18,8 +18,9 @@
 # 1. Скачать зависимости
 pip install -r requirements.txt
 
-# 2. Вставить API ключ DeepSeek (получить на platform.deepseek.com)
-DEEPSEEK_API_KEY=""
+# 2. Вставить API ключ YandexGPT и ID (получить на yandex.cloud/ru)
+YANDEX_FOLDER_ID=""
+YANDEX_API_KEY=""
 
 # 3. Запустить
 uvicorn main:app --reload
@@ -27,14 +28,18 @@ uvicorn main:app --reload
 
 ## Архитектура
 
-`Сайт (сделан на Java)` → `FastAPI` → `DeepSeek API` → `PostgreSQL (история)`
+`Сайт (сделан на Java)` → `FastAPI` → `YandexGPT API` → `PostgreSQL (история)`
 
 ## Требования
 
 ```text
+python-dotenv==1.2.2
+pydantic==2.12.5
 fastapi==0.135.3
 uvicorn==0.43.0
 requests==2.33.1
+httpx==0.28.1
+asyncpg==0.31.0
 ```
 
 ## Конфигурация
@@ -42,8 +47,14 @@ requests==2.33.1
 Создай файл `.env`:
 
 ```env
-DEEPSEEK_API_KEY=sk-твой_ключ
-RESTAURANT_MENU_VERSION=1.0
+YANDEX_FOLDER_ID=""
+YANDEX_API_KEY=""
+POSTGRES_HOST=""
+POSTGRES_PORT=""
+POSTGRES_DB=""
+POSTGRES_USER=""
+POSTGRES_PASSWORD=""
+ALLOWED_ORIGINS=""
 ```
 
 ## Ошибки API
@@ -53,7 +64,7 @@ RESTAURANT_MENU_VERSION=1.0
 | 400 | Пустое сообщение или некорректные параметры |
 | 404 | Диалог не найден |
 | 422 | Ошибка валидации JSON |
-| 500 | Ошибка DeepSeek API или таймаут |
+| 500 | Ошибка YandexGPT API или таймаут |
 
 ## Все эндпоинты (НА СОГЛАСОВАНИИ)
 
@@ -79,8 +90,8 @@ POST /api/chat
 {
   "message": "Какой состав блюда Noname?",
   "conversation_id": "uuid",
-  "temperature": 0.7,
-  "max_tokens": 1000
+  "temperature": 0.3,
+  "max_tokens": 300
 }
 ```
 | Поле              | Тип     | Описание                                                    |
@@ -131,7 +142,7 @@ GET /api/health
 ```json
 {
   "status": "OK",
-  "deepseek_api": "connected",
+  "yandexgpt_api": "connected",
   "timestamp": "2026-04-04T12:00:00"
 }
 ```
