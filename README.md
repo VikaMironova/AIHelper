@@ -36,10 +36,13 @@ uvicorn main:app --reload
 python-dotenv==1.2.2
 pydantic==2.12.5
 fastapi==0.135.3
-uvicorn==0.43.0
+uvicorn==0.44.0
 requests==2.33.1
 httpx==0.28.1
 asyncpg==0.31.0
+alembic==1.18.4
+sqlalchemy==2.0.49
+psycopg2-binary==2.9.11
 ```
 
 ## Конфигурация
