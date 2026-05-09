@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="chatWidget">
+    <style>
+        .ai-chat-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .chat-toggle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .chat-toggle:active {
+            transform: scale(0.95);
+        }
+
+        .chat-window {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 9999;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .chat-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+
+        .chat-close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .chat-close:active {
+            transform: scale(0.9);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .chat-input-area {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+            background: white;
+            flex-shrink: 0;
+            gap: 8px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .chat-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .chat-send {
+            padding: 8px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            font-weight: bold;
+        }
+
+        .chat-send:hover {
+            opacity: 0.9;
+        }
+
+        .chat-send:active {
+            transform: scale(0.98);
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 15px;
+            max-width: 80%;
+            word-wrap: break-word;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .user-message {
+            background: #667eea;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+            border-radius: 15px 15px 4px 15px;
+        }
+
+        .bot-message {
+            background: white;
+            color: #333;
+            border: 1px solid #ddd;
+            border-radius: 15px 15px 15px 4px;
+        }
+
+        /* ===== МОБИЛЬНАЯ АДАПТАЦИЯ ===== */
+        @media (max-width: 768px) {
+            .ai-chat-widget {
+                bottom: 15px;
+                right: 15px;
+            }
+
+            .chat-toggle {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+            }
+
+            .chat-window {
+                position: fixed;
+                bottom: 75px;
+                right: 15px;
+                left: 15px;
+                width: auto;
+                max-width: none;
+                height: auto;
+                max-height: calc(100vh - 100px);
+                border-radius: 15px;
+            }
+
+            .chat-messages {
+                max-height: calc(60vh - 80px);
+                padding: 12px;
+            }
+
+            .message {
+                max-width: 90%;
+                font-size: 13px;
+                padding: 8px 12px;
+            }
+
+            .chat-input {
+                padding: 10px 12px;
+                font-size: 16px;
+            }
+
+            .chat-send {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+
+            .chat-header {
+                padding: 12px 15px;
+            }
+        }
+
+        /* Для очень маленьких экранов (iPhone SE) */
+        @media (max-width: 480px) {
+            .chat-window {
+                bottom: 70px;
+                right: 10px;
+                left: 10px;
+                max-height: calc(100vh - 90px);
+            }
+
+            .chat-messages {
+                max-height: calc(55vh - 80px);
+            }
+
+            .chat-toggle {
+                width: 45px;
+                height: 45px;
+                font-size: 22px;
+            }
+        }
+
+        /* Анимация появления */
+        .chat-window.show {
+            display: flex;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Стилизация скроллбара */
+        .chat-messages::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 5px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 5px;
+        }
+    </style>
+
+    <div class="ai-chat-widget">
+        <button class="chat-toggle" onclick="toggleChat()">🤖</button>
+    </div>
+
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+            <span>🤖 ИИ Ассистент</span>
+            <button class="chat-close" onclick="toggleChat()">✕</button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot-message">Здравствуйте! Чем могу помочь?</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" class="chat-input" id="chatInput" placeholder="Введите ваш вопрос..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <button class="chat-send" onclick="sendMessage()">Отправить</button>
+        </div>
+    </div>
+
+    <script>
+        const AI_BOT_URL = window.location.protocol + '//' + window.location.hostname + ':8000';
+
+        let currentConversationId = localStorage.getItem('chat_conversation_id');
+
+        // Функция для создания нового UUID
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        let isSending = false;
+
+        function toggleChat() {
+            const chatWindow = document.getElementById('chatWindow');
+            if (chatWindow.style.display === 'none' || chatWindow.style.display === '') {
+                chatWindow.style.display = 'flex';
+                // Фокус на поле ввода при открытии (для мобильных)
+                setTimeout(() => {
+                    document.getElementById('chatInput').focus();
+                }, 100);
+            } else {
+                chatWindow.style.display = 'none';
+            }
+        }
+
+        async function sendMessage() {
+            if (isSending) return;
+
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+
+            if (message === '') return;
+
+            const messagesContainer = document.getElementById('chatMessages');
+
+            // Добавляем сообщение пользователя
+            const userMessageDiv = document.createElement('div');
+            userMessageDiv.className = 'message user-message';
+            userMessageDiv.textContent = message;
+            messagesContainer.appendChild(userMessageDiv);
+
+            input.value = '';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            // Индикатор загрузки
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'message bot-message';
+            loadingDiv.textContent = '🤔 Печатает...';
+            loadingDiv.id = 'loadingMessage';
+            messagesContainer.appendChild(loadingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            isSending = true;
+
+            try {
+                // Если нет ID диалога, создаем новый
+                if (!currentConversationId) {
+                    currentConversationId = generateUUID();
+                    localStorage.setItem('chat_conversation_id', currentConversationId);
+                }
+
+                const response = await fetch(`${AI_BOT_URL}/api/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        conversation_id: currentConversationId,
+                        message: message,
+                        temperature: 0.7,
+                        max_tokens: 500
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Ошибка сервера: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Обновляем ID если нужно
+                if (data.conversation_id) {
+                    currentConversationId = data.conversation_id;
+                    localStorage.setItem('chat_conversation_id', currentConversationId);
+                }
+
+                // Удаляем индикатор загрузки
+                document.getElementById('loadingMessage')?.remove();
+
+                // Добавляем ответ бота
+                const botMessageDiv = document.createElement('div');
+                botMessageDiv.className = 'message bot-message';
+                botMessageDiv.textContent = data.reply;
+                messagesContainer.appendChild(botMessageDiv);
+
+            } catch (error) {
+                console.error('Ошибка:', error);
+                document.getElementById('loadingMessage')?.remove();
+
+                const errorMessageDiv = document.createElement('div');
+                errorMessageDiv.className = 'message bot-message';
+                errorMessageDiv.textContent = '😔 Извините, не удалось отправить сообщение. Проверьте, запущен ли AI бот.';
+                messagesContainer.appendChild(errorMessageDiv);
+            } finally {
+                isSending = false;
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+        }
+    </script>
+</div>
+</html>

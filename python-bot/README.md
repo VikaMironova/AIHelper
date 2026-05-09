@@ -69,7 +69,7 @@ ALLOWED_ORIGINS=""
 | 422 | Ошибка валидации JSON |
 | 500 | Ошибка YandexGPT API или таймаут |
 
-## Все эндпоинты (НА СОГЛАСОВАНИИ)
+## Все эндпоинты
 
 | Метод | Эндпоинт | Что делает |
 |-------|----------|-------------|
@@ -149,3 +149,44 @@ GET /api/health
   "timestamp": "2026-04-04T12:00:00"
 }
 ```
+## Деплой на REG.RU (арендовала сервер со встроенным Docker)
+
+1. Переходим в директорию проекта, выполняет запаковку проекта в формат .tar:
+```bash
+tar -czf my_project.tar.gz .
+```
+2. Копируем файл на наш сервер:
+```bash
+scp my_project.tar.gz user@my_server:~/
+```
+3. Заходим на сервер:
+```bash
+ssh user@my_server
+```
+Создаем директорию для проекта:
+```bash
+mkdir -p ~/my_project
+```
+(root - по умолчанию, но нужно создать другого юзера в целях безопасности)
+
+4. Распаковка на сервере:
+```bash
+mv ~/my_project.tar.gz ~/my_project/
+cd ~/my_project
+tar -xzf my_project.tar.gz
+rm my_project.tar.gz
+```
+5. Создаём файл .env с переменными окружения:
+```bash
+nano .env
+```
+6. Запуск Docker-образа:
+```bash
+docker-compose up -d
+```
+
+## CI/CD (автоматический деплой)
+
+через GitHub Actions
+
+

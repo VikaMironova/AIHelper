@@ -5,9 +5,9 @@ from uuid import UUID
 from src.infrastructure.database import db
 from src.infrastructure.yandexgpt_client import call_yandexgpt
 from src.models.schemas import ChatResponse, ChatRequest
+from src.routes.menu import get_system_prompt
 
 router = APIRouter()
-
 
 @router.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
@@ -20,11 +20,10 @@ async def chat(request: ChatRequest):
     history = await db.get_conversation_messages(conv_id)
 
     messages = [
-        {"role": "system",
-         "content": "Ты помощник ресторана. Отвечай кратко, по-русски, помогай с выбором блюд и подсчётом калорий."
-                    "Обсуждай только тему нашего ресторана и еды. Остальное: извините, я общаюсь в рамках наших блюд."}
+        {"role": "system", "content": get_system_prompt()}
     ]
     messages.extend(history)
+
     messages.append({"role": "user", "content": request.message})
 
     await db.add_message(conv_id, "user", request.message)

@@ -16,9 +16,13 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - app-network
 
   yandexgpt-bridge:
-    build: .
+    build:
+      context: ./python-bot
+      dockerfile: Dockerfile
     container_name: yandexgpt_bridge
     environment:
       YANDEX_API_KEY: ${YANDEX_API_KEY}
@@ -32,13 +36,17 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - .:/app
-      - /app/.venv
-      - /app/__pycache__
+      - ./python-bot:/app
     depends_on:
       postgres:
         condition: service_healthy
     restart: unless-stopped
+    networks:
+      - app-network
 
 volumes:
   postgres_data:
+
+networks:
+  app-network:
+    driver: bridge
