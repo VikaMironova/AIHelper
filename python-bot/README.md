@@ -187,4 +187,30 @@ docker-compose up -d
 
 ## CI/CD (автоматический деплой)
 
-через GitHub Actions
+**GitHub Actions**
+
+1. Генерация SSH-ключ на сервере REG.RU
+
+```bash
+# Заходим на сервер
+ssh user@my_server
+
+# Генерируем ключ (без пароля, просто нажимаем Enter)
+ssh-keygen -t ed25519 -C "github-actions@my_project"
+
+# Выводим публичный ключ — его нужно будет добавить в authorized_keys
+cat ~/.ssh/id_ed25519.pub
+
+# Добавляем публичный ключ в authorized_keys (если ещё не добавился автоматически)
+cat ~/.ssh/id_ed25519.pub >> ~/.ssh/authorized_keys
+
+# Выводим приватный ключ — его скопируем в GitHub Secrets
+cat ~/.ssh/id_ed25519
+
+```
+
+2. Скопируй приватный ключ (начинается с -----BEGIN OPENSSH PRIVATE KEY-----). 
+Он понадобится на GitHub.
+3. Добавить секреты в GitHub
+Зайди в свой репозиторий на GitHub → Settings → Secrets and variables → Actions → нажми New repository secret.
+4. 

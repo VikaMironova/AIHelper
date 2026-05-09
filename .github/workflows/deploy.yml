@@ -1,0 +1,59 @@
+name: Deploy to REG.RU
+
+on:
+  push:
+    branches: [ main ] # лучше dev, чтобы вовремя выявлять баги и деплоить код без ошибок
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Create .env file
+        run: |
+          echo "YANDEX_FOLDER_ID=${{ secrets.YANDEX_FOLDER_ID }}" >> .env
+          echo "YANDEX_API_KEY=${{ secrets.YANDEX_API_KEY }}" >> .env
+          echo "POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}" >> .env
+          echo "POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}" >> .env
+          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env
+          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env
+          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
+          echo "ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}" >> .env
+      
+      - name: Create archive
+        run: |
+          tar --exclude='__pycache__' \
+              --exclude='*.pyc' \
+              --exclude='.git' \
+              --exclude='venv' \
+              --exclude='.env' \
+              -czf my_project.tar.gz .
+      
+      - name: Copy archive to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.REG_HOST }}
+          username: ${{ secrets.REG_USER }}
+          key: ${{ secrets.REG_SSH_KEY }}
+          source: "my_project.tar.gz"
+          target: "~/"
+      
+      - name: Deploy on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.REG_HOST }}
+          username: ${{ secrets.REG_USER }}
+          key: ${{ secrets.REG_SSH_KEY }}
+          script: |
+            mkdir -p ~/my_project
+            mv ~/my_project.tar.gz ~/my_project/
+            cd ~/my_project
+            tar -xzf my_project.tar.gz
+            rm my_project.tar.gz
+            docker-compose down
+            docker-compose up -d --build
+            docker system prune -f
