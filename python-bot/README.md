@@ -188,5 +188,3 @@ docker-compose up -d
 ## CI/CD (автоматический деплой)
 
 через GitHub Actions
-
-
